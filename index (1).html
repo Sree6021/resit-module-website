@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MML | Marx Memorial Library & Workers' School</title>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700;1,900&family=Poppins:wght@300;500;700;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/ScrollTrigger.min.js"></script>
+
+    <style>
+        :root {
+            --paper: #ffffff; 
+            --deep-red: rgb(78, 11, 15); 
+            --accent: #d4af37; 
+            --text: #1a1a1a;
+            --border: rgba(78, 11, 15, 0.15);
+            --card-bg: rgba(0,0,0,0.02);
+        }
+
+        body.dark-mode { 
+            --paper: #121212; 
+            --text: #e0e0e0; 
+            --border: rgba(255,255,255,0.1); 
+            --card-bg: rgba(255,255,255,0.03);
+        }
+
+        * { margin: 0; padding: 0; box-sizing: border-box; cursor: none; }
+        body { font-family: 'Poppins', sans-serif; background: var(--paper); color: var(--text); overflow-x: hidden; scroll-behavior: smooth; transition: background 0.5s ease; }
+
+        /* Progress Bar */
+        #scroll-progress { position: fixed; top: 0; left: 0; height: 3px; background: var(--accent); width: 0%; z-index: 3000; }
+
+        /* Watermark */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 50%; left: 50%;
+            transform: translate(-50%, -50%);
+            width: 60vw; height: 60vw;
+            background-image: url('https://i.ibb.co/DDqj4X4s/Gemini-Generated-Image-e91jbke91jbke91j.png');
+            background-size: contain; background-repeat: no-repeat; background-position: center;
+            opacity: 0.03; pointer-events: none; z-index: -1; filter: grayscale(100%);
+        }
+
+        #cursor { width: 15px; height: 15px; background: var(--deep-red); border-radius: 50%; position: fixed; pointer-events: none; z-index: 100001; transition: transform 0.1s ease-out, background 0.3s; }
+        body.dark-mode #cursor { background: var(--accent); }
+        .hovered-target { transform: scale(2.5) !important; opacity: 0.5; }
+
+        .event-ticker { position: fixed; top: 0; width: 100%; background: var(--deep-red); color: #ffffff; font-size: 0.65rem; padding: 10px 0; z-index: 2000; letter-spacing: 2px; text-transform: uppercase; overflow: hidden; font-weight: 700; }
+        .ticker-content { display: inline-block; white-space: nowrap; padding-left: 100%; animation: ticker 30s linear infinite; }
+        @keyframes ticker { 0% { transform: translate(0, 0); } 100% { transform: translate(-100%, 0); } }
+
+        /* Hero */
+        .hero { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; position: relative; }
+        .logo-wrapper { width: 100%; height: 50vh; display: flex; justify-content: center; }
+        .logo-wrapper img { max-width: 80%; object-fit: contain; }
+        .hero-text h2 { font-family: 'Playfair Display', serif; color: var(--deep-red); font-size: clamp(1rem, 3vw, 2.2rem); text-transform: uppercase; letter-spacing: 6px; font-weight: 900; text-align: center; }
+        body.dark-mode .hero-text h2 { color: var(--accent); }
+        
+        /* Map Section */
+        .map-section { padding: 80px 10%; background: var(--paper); text-align: center; }
+        .map-container { width: 100%; height: 450px; border: 1px solid var(--border); filter: grayscale(1); transition: 0.5s; margin-top: 30px; }
+        .map-container:hover { filter: grayscale(0); }
+
+        /* Ledger Section */
+        .ledger-section { padding: 80px 10%; background: var(--card-bg); }
+        .ledger-table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 0.85rem; }
+        .ledger-table th { text-align: left; padding: 15px; background: var(--deep-red); color: white; text-transform: uppercase; letter-spacing: 1px; }
+        .ledger-table td { padding: 15px; border-bottom: 1px solid var(--border); }
+
+        /* Booking Section */
+        .booking-section { padding: 100px 10%; background: var(--paper); border-top: 1px solid var(--border); }
+        .booking-container { max-width: 1000px; margin: 0 auto; }
+        .booking-header { text-align: center; margin-bottom: 50px; }
+        .booking-grid { display: grid; grid-template-columns: 1fr 1.5fr; gap: 60px; align-items: start; }
+        .booking-info h3 { font-family: 'Playfair Display'; margin-bottom: 20px; color: var(--deep-red); }
+        body.dark-mode .booking-info h3 { color: var(--accent); }
+        .booking-info ul { list-style: none; }
+        .booking-info li { font-size: 0.85rem; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; opacity: 0.8; }
+        .booking-info i { color: var(--accent); font-size: 0.7rem; }
+        .booking-notice { margin-top: 30px; padding: 20px; border: 1px dashed var(--deep-red); font-size: 0.75rem; font-style: italic; opacity: 0.7; }
+        body.dark-mode .booking-notice { border-color: var(--accent); }
+        .booking-form-wrapper form { display: flex; flex-direction: column; gap: 15px; }
+        .form-group { display: flex; gap: 15px; }
+        .form-group input, select, textarea { flex: 1; padding: 12px 15px; border: 1px solid var(--border); background: var(--card-bg); font-family: 'Poppins'; font-size: 0.8rem; outline: none; }
+        input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+        body.dark-mode .form-group input, body.dark-mode select, body.dark-mode textarea { background: rgba(255,255,255,0.05); color: white; }
+
+        /* Modal & Component Styles */
+        .cite-btn { background: var(--accent); border: none; color: white; padding: 10px 20px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; border-radius: 4px; cursor: pointer; margin-top: 15px; display: inline-flex; align-items: center; gap: 8px; transition: 0.2s ease; }
+        .cite-btn:hover { opacity: 0.9; transform: translateY(-1px); }
+        .cite-btn.alt { background: var(--deep-red); }
+        body.dark-mode .cite-btn.alt { background: #333; }
+        
+        .exhibit-banner { height: 60vh; background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url('https://images.unsplash.com/photo-1507842217343-583bb7270b66?auto=format&fit=crop&w=1500&q=80'); background-attachment: fixed; background-size: cover; display: flex; align-items: center; padding: 0 10%; color: white; margin: 50px 0; border-top: 2px solid var(--accent); border-bottom: 2px solid var(--accent); }
+        .exhibit-content { max-width: 600px; border-left: 4px solid var(--accent); padding-left: 30px; }
+        #stats-bar { background: #000; color: #fff; padding: 60px 10%; display: flex; justify-around: space-around; text-align: center; border-bottom: 1px solid var(--accent); position: relative; z-index: 1; }
+        .stat-counter { font-size: 3rem; color: var(--accent); font-family: 'Playfair Display'; }
+        .bookshelf-container { padding: 60px 10% 100px 10%; position: relative; z-index: 1; }
+        .breadcrumbs { font-size: 0.65rem; text-transform: uppercase; letter-spacing: 2px; color: var(--accent); margin-bottom: 10px; text-align: center; }
+        .search-wrapper { max-width: 600px; margin: 0 auto 40px auto; position: relative; }
+        #archive-search { width: 100%; padding: 15px 25px; border-radius: 50px; border: 1px solid var(--border); font-family: 'Poppins'; background: rgba(255,255,255,0.8); backdrop-filter: blur(5px); outline: none; transition: 0.3s; }
+        body.dark-mode #archive-search { background: rgba(30, 30, 30, 0.8); color: white; border-color: var(--accent); }
+        .filter-controls { display: flex; justify-content: center; gap: 15px; margin-bottom: 50px; flex-wrap: wrap; }
+        .filter-btn { background: transparent; border: 1px solid var(--border); padding: 10px 25px; font-family: 'Poppins'; font-size: 0.7rem; text-transform: uppercase; font-weight: 700; color: var(--deep-red); transition: 0.3s; cursor: pointer; border-radius: 4px; }
+        body.dark-mode .filter-btn { color: var(--accent); border-color: var(--border); }
+        .filter-btn.active, .filter-btn:hover { background: var(--deep-red); color: #fff; border-color: var(--deep-red); transform: translateY(-3px); }
+        body.dark-mode .filter-btn.active { background: var(--accent); color: #000; border-color: var(--accent); }
+        
+        .books-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 40px; }
+        .book { position: relative; aspect-ratio: 2/3; background: var(--deep-red); box-shadow: 5px 5px 20px rgba(0,0,0,0.1); cursor: pointer; opacity: 1; transform: translateY(0); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .book:hover { transform: translateY(-5px) !important; box-shadow: 8px 12px 25px rgba(0,0,0,0.25); }
+        .book img { width: 100%; height: 100%; object-fit: cover; filter: sepia(0.3) contrast(1.1); }
+        
+        #book-modal, #help-modal { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%) scale(0.9); width: 95%; max-width: 900px; max-height: 90vh; background: #fff; z-index: 50000; display: none; border: 1px solid var(--accent); opacity: 0; pointer-events: none; overflow-y: auto; }
+        body.dark-mode #book-modal, body.dark-mode #help-modal { background: #1a1a1a; color: #fff; }
+        .modal-content { display: flex; flex-wrap: wrap; width: 100%; }
+        .modal-left { width: 40%; background: var(--deep-red); display: flex; align-items: center; justify-content: center; padding: 40px; min-width: 300px; }
+        .modal-right { width: 60%; padding: 40px; background: #fff; flex-grow: 1; position: relative; }
+        body.dark-mode .modal-right { background: #1a1a1a; }
+        .close-btn { position: absolute; top: 20px; right: 20px; font-size: 2rem; color: var(--deep-red); cursor: pointer; z-index: 10; }
+        body.dark-mode .close-btn { color: var(--accent); }
+        .modal-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.9); z-index: 49999; display: none; opacity: 0; backdrop-filter: blur(5px); }
+        
+        .nav-dock { position: fixed; bottom: 30px; left: 50%; transform: translateX(-50%); display: flex; background: rgba(255, 255, 255, 0.95); backdrop-filter: blur(15px); padding: 8px 15px; border-radius: 100px; border: 1px solid var(--border); z-index: 10000; box-shadow: 0 15px 40px rgba(0,0,0,0.15); gap: 5px; }
+        body.dark-mode .nav-dock { background: rgba(20, 20, 20, 0.95); }
+        .nav-btn { background: transparent; border: none; color: var(--deep-red); font-weight: 800; font-size: 0.65rem; padding: 10px 18px; text-transform: uppercase; text-decoration: none; display: flex; align-items: center; gap: 8px; cursor: pointer; border-radius: 50px; transition: 0.3s; }
+        body.dark-mode .nav-btn { color: var(--accent); }
+        .nav-btn:hover { background: rgba(0,0,0,0.05); }
+        body.dark-mode .nav-btn:hover { background: rgba(255,255,255,0.05); }
+        
+        .footer-branding { padding: 60px 10%; text-align: center; border-top: 1px solid var(--border); background: var(--paper); }
+        .footer-logo { width: 75px; opacity: 1; margin-bottom: 20px; transition: 0.3s ease; }
+        
+        /* Notifications & Helper Components */
+        #toast-container { position: fixed; bottom: 100px; right: 30px; z-index: 60000; display: flex; flex-direction: column; gap: 10px; }
+        .toast { background: var(--deep-red); color: white; padding: 12px 20px; border-radius: 4px; border-left: 4px solid var(--accent); font-size: 0.75rem; font-weight: 500; box-shadow: 0 5px 15px rgba(0,0,0,0.2); transform: translateX(120%); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        body.dark-mode .toast { background: #222; }
+        .toast.show { transform: translateX(0); }
+
+        .no-results { grid-column: 1 / -1; text-align: center; padding: 40px; font-style: italic; opacity: 0.6; display: none; }
+        .kbd-key { background: var(--card-bg); border: 1px solid var(--border); border-radius: 3px; padding: 2px 6px; font-family: monospace; font-size: 0.75rem; }
+
+        @media (max-width: 768px) { .booking-grid { grid-template-columns: 1fr; } .modal-left, .modal-right { width: 100%; } }
+    </style>
+</head>
+
+<body>
+    <div id="scroll-progress"></div>
+    <div id="cursor"></div>
+    <div id="toast-container"></div>
+
+    <div class="event-ticker">
+        <div class="ticker-content">
+            EST. 1933 • VISIT THE LENIN ROOM • ARCHIVE ACCESS BY APPOINTMENT • PRESERVING THE HISTORY OF LABOUR • PRESS 'L' FOR NIGHT MODE • PRESS 'S' TO SEARCH • PRESS '?' FOR SHORTCUTS •
+        </div>
+    </div>
+
+    <header class="hero" id="home">
+        <div class="logo-wrapper">
+            <img src="https://i.ibb.co/DDqj4X4s/Gemini-Generated-Image-e91jbke91jbke91j.png" alt="MML Logo">
+        </div>
+        <div class="hero-text">
+            <h2>Marx Memorial Library & Workers' School</h2>
+        </div>
+    </header>
+
+    <section id="stats-bar">
+        <div><h4 class="stat-counter" data-target="60000">0</h4><p style="font-size: 0.6rem; opacity: 0.6; text-transform: uppercase;">Documents</p></div>
+        <div><h4 class="stat-counter" data-target="1933">0</h4><p style="font-size: 0.6rem; opacity: 0.6; text-transform: uppercase;">Year Formed</p></div>
+        <div><h4 class="stat-counter" data-target="2100">0</h4><p style="font-size: 0.6rem; opacity: 0.6; text-transform: uppercase;">Solidarity Posters</p></div>
+    </section>
+
+    <section class="map-section" id="location">
+        <h2 style="font-family: 'Playfair Display'; font-size: 2.2rem; color: var(--deep-red);">Clerkenwell Green</h2>
+        <p style="font-size: 0.8rem; text-transform: uppercase; letter-spacing: 2px;">The Heart of Radical London</p>
+        <div class="map-container">
+            <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2482.493922378822!2d-0.10660668422944743!3d51.5225139796377!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x48761b53e778619d%3A0xc39f9b5a88e734c5!2sMarx%20Memorial%20Library!5e0!3m2!1sen!2suk!4v1680000000000" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+        </div>
+    </section>
+
+    <section class="exhibit-banner">
+        <div class="exhibit-content">
+            <h5 style="text-transform: uppercase; color: var(--accent); letter-spacing: 3px;">Featured Exhibit</h5>
+            <h2 style="font-family: 'Playfair Display'; font-size: 2.5rem; margin: 10px 0;">The ISKRA Archives</h2>
+            <p style="opacity: 0.9; font-weight: 300;">Explore the very room where Lenin edited the spark of revolution.</p>
+            <button class="filter-btn" style="margin-top: 20px; color: white; border-color: white;" onclick="triggerToast('Virtual Tour access coming soon in digital archive v2.0!')">Explore Virtual Tour</button>
+        </div>
+    </section>
+
+    <section class="ledger-section" id="ledger">
+        <h2 style="font-family: 'Playfair Display'; font-size: 2.2rem; color: var(--deep-red); text-align: center;">Researcher Ledger</h2>
+        <p style="text-align: center; font-size: 0.7rem; opacity: 0.6; margin-bottom: 30px;">REAL-TIME ARCHIVE STATUS</p>
+        <table class="ledger-table">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Document ID</th>
+                    <th>Researcher</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr><td>2026-04-20</td><td>MML-9921</td><td>A. Thompson</td><td><span style="color: green;">● Available</span></td></tr>
+                <tr><td>2026-04-18</td><td>MML-3827</td><td>M. Khalil</td><td><span style="color: var(--accent);">● In Review</span></td></tr>
+                <tr><td>2026-04-15</td><td>MML-7762</td><td>S. O'Connor</td><td><span style="color: var(--deep-red);">● Reserved</span></td></tr>
+            </tbody>
+        </table>
+    </section>
+
+    <section class="bookshelf-container" id="archives">
+        <div class="breadcrumbs">Archive / <span id="current-filter-crumb">All Records</span></div>
+        <h2 style="font-family: 'Playfair Display'; font-size: 2.8rem; color: var(--deep-red); text-align: center; margin-bottom: 40px;">The Reading Room</h2>
+        
+        <div class="search-wrapper">
+            <input type="text" id="archive-search" placeholder="Search by title, author, or keyword... (Press 'S')">
+            <i class="fas fa-search" style="position: absolute; right: 25px; top: 50%; transform: translateY(-50%); color: var(--deep-red);"></i>
+        </div>
+
+        <div class="filter-controls">
+            <button class="filter-btn active" data-filter="all">All</button>
+            <button class="filter-btn" data-filter="theory">Theory</button>
+            <button class="filter-btn" data-filter="history">History</button>
+            <button class="filter-btn" data-filter="internationalism">Internationalism</button>
+        </div>
+
+        <div class="books-grid" id="books-grid">
+            <div class="book" data-title="Das Kapital" data-cat="theory"><img src="https://covers.openlibrary.org/b/id/8231938-L.jpg" alt="Das Kapital"></div>
+            <div class="book" data-title="The Communist Manifesto" data-cat="theory"><img src="https://covers.openlibrary.org/b/id/8282857-L.jpg" alt="The Communist Manifesto"></div>
+            <div class="book" data-title="The Spanish Civil War" data-cat="history"><img src="https://covers.openlibrary.org/b/id/12642823-L.jpg" alt="The Spanish Civil War"></div>
+            <div class="book" data-title="The Paris Commune" data-cat="history"><img src="https://covers.openlibrary.org/b/id/10156934-L.jpg" alt="The Paris Commune"></div>
+            <div class="book" data-title="Women, Race & Class" data-cat="internationalism"><img src="https://covers.openlibrary.org/b/id/10534575-L.jpg" alt="Women, Race & Class"></div>
+            <div class="book" data-title="Black Reconstruction" data-cat="internationalism"><img src="https://covers.openlibrary.org/b/id/8301132-L.jpg" alt="Black Reconstruction"></div>
+            <div class="no-results" id="no-results">No archive matches found for your query.</div>
+        </div>
+    </section>
+
+    <section class="booking-section" id="book-visit">
+        <div class="booking-container">
+            <div class="booking-header">
+                <h2 style="font-family: 'Playfair Display'; font-size: 2.2rem; color: var(--deep-red);">Request Archive Access</h2>
+                <p style="font-size: 0.7rem; letter-spacing: 2px; opacity: 0.7; margin-top: 10px;">CONSULT THE SPECIAL COLLECTIONS • BY APPOINTMENT ONLY</p>
+            </div>
+            
+            <div class="booking-grid">
+                <div class="booking-info">
+                    <h3>Visiting Requirements</h3>
+                    <ul>
+                        <li><i class="fas fa-check"></i> Valid photographic ID required on arrival.</li>
+                        <li><i class="fas fa-check"></i> Pencil and paper only in the reading room.</li>
+                        <li><i class="fas fa-check"></i> Digital photography is permitted for a small fee.</li>
+                    </ul>
+                    <div class="booking-notice">Note: Please allow 3 working days for document retrieval.</div>
+                </div>
+
+                <div class="booking-form-wrapper">
+                    <form id="visit-form">
+                        <div class="form-group">
+                            <input type="text" placeholder="Full Name" required>
+                            <input type="email" placeholder="Institutional Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="date" id="visit-date" required>
+                            <select required>
+                                <option value="" disabled selected>Select Time Slot</option>
+                                <option>Morning (10:00 - 13:00)</option>
+                                <option>Afternoon (14:00 - 17:00)</option>
+                            </select>
+                        </div>
+                        <textarea id="doc-request-field" placeholder="List Document IDs or Research Topic (e.g., MML-9921, Spanish Civil War Posters)" rows="4" required></textarea>
+                        <button type="submit" class="cite-btn" style="width: 100%; justify-content: center; font-size: 0.9rem; padding: 15px;">Submit Access Request</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="footer-branding">
+        <img src="https://i.ibb.co/DDqj4X4s/Gemini-Generated-Image-e91jbke91jbke91j.png" class="footer-logo" alt="MML Seal">
+        <p style="font-size: 0.6rem; letter-spacing: 2px; text-transform: uppercase; opacity: 0.5;">Marx Memorial Library & Workers' School © 2026</p>
+    </footer>
+
+    <div class="modal-overlay" id="overlay"></div>
+
+    <!-- Book Details Modal -->
+    <div id="book-modal">
+        <div class="close-btn closeModal">×</div>
+        <div class="modal-content">
+            <div class="modal-left"><img id="m-img" src="" style="width: 100%; box-shadow: 10px 10px 30px rgba(0,0,0,0.5);"></div>
+            <div class="modal-right">
+                <h4 id="m-author" style="color: var(--accent); letter-spacing: 1px; font-size: 0.7rem; text-transform: uppercase;"></h4>
+                <h2 id="m-title" style="font-family: 'Playfair Display'; font-size: 2rem; color: var(--deep-red); margin: 10px 0;"></h2>
+                <div style="font-size: 0.8rem; margin: 20px 0; padding: 15px; background: rgba(0,0,0,0.03); border-left: 3px solid var(--accent);">
+                    <p><strong>Published:</strong> <span id="m-year"></span></p>
+                    <p><strong>CID:</strong> <span id="m-cid"></span></p>
+                </div>
+                <p id="m-desc" style="line-height: 1.6; font-size: 0.9rem; opacity: 0.8;"></p>
+                <div style="display: flex; gap: 10px; flex-wrap: wrap;">
+                    <button class="cite-btn" id="download-cite"><i class="fas fa-file-export"></i> Download BibTeX</button>
+                    <button class="cite-btn alt" id="add-to-request-btn"><i class="fas fa-folder-plus"></i> Request for Visit</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Shortcuts Helper Modal -->
+    <div id="help-modal">
+        <div class="close-btn closeModal">×</div>
+        <div style="padding: 40px;">
+            <h2 style="font-family: 'Playfair Display'; color: var(--deep-red); margin-bottom: 20px;">Keyboard Shortcuts</h2>
+            <div style="display: grid; grid-template-columns: 1fr 2fr; gap: 15px; font-size: 0.85rem; align-items: center;">
+                <div><span class="kbd-key">S</span></div><div>Focus reading room search input</div>
+                <div><span class="kbd-key">L</span></div><div>Toggle Night / Light mode</div>
+                <div><span class="kbd-key">?</span></div><div>Open shortcuts reference guide</div>
+                <div><span class="kbd-key">Esc</span></div><div>Close active archive modals</div>
+            </div>
+        </div>
+    </div>
+
+    <nav class="nav-dock">
+        <a href="#home" class="nav-btn"><i class="fas fa-home"></i><span>Home</span></a>
+        <a href="#archives" class="nav-btn"><i class="fas fa-book-reader"></i><span>Read</span></a>
+        <a href="#ledger" class="nav-btn"><i class="fas fa-list-alt"></i><span>Ledger</span></a>
+        <a href="#book-visit" class="nav-btn"><i class="fas fa-calendar-check"></i><span>Visit</span></a>
+        <button class="nav-btn" id="reading-mode-btn"><i class="fas fa-moon"></i><span>Night</span></button>
+    </nav>
+
+    <script>
+        const archiveData = {
+            "Das Kapital": { author: "Karl Marx", year: "1934", cat: "theory", cid: "MML-3827", desc: "A key edition of Marx's critique of political economy.", img: "https://covers.openlibrary.org/b/id/8231938-L.jpg" },
+            "The Communist Manifesto": { author: "Marx & Engels", year: "1848", cat: "theory", cid: "MML-1092", desc: "The defining document of the socialist movement.", img: "https://covers.openlibrary.org/b/id/8282857-L.jpg" },
+            "The Spanish Civil War": { author: "Antony Beevor", year: "1982", cat: "history", cid: "MML-9921", desc: "Essential records of the International Brigades.", img: "https://covers.openlibrary.org/b/id/12642823-L.jpg" },
+            "The Paris Commune": { author: "Karl Marx", year: "1871", cat: "history", cid: "MML-4451", desc: "A materialist analysis of the 1871 revolution.", img: "https://covers.openlibrary.org/b/id/10156934-L.jpg" },
+            "Women, Race & Class": { author: "Angela Y. Davis", year: "1981", cat: "internationalism", cid: "MML-7762", desc: "Foundational text on intersectionality.", img: "https://covers.openlibrary.org/b/id/10534575-L.jpg" },
+            "Black Reconstruction": { author: "W.E.B. Du Bois", year: "1935", cat: "internationalism", cid: "MML-8890", desc: "Historical scholarship on the role of Black workers.", img: "https://covers.openlibrary.org/b/id/8301132-L.jpg" }
+        };
+
+        // Custom Cursor Logic
+        const cursor = document.getElementById('cursor');
+        window.addEventListener('mousemove', (e) => gsap.to(cursor, { x: e.clientX, y: e.clientY, duration: 0.1 }));
+        
+        document.querySelectorAll('a, button, .book, input, select, textarea').forEach(el => {
+            el.addEventListener('mouseenter', () => cursor.classList.add('hovered-target'));
+            el.addEventListener('mouseleave', () => cursor.classList.remove('hovered-target'));
+        });
+
+        // Toast Notifications Function
+        function triggerToast(message) {
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.innerHTML = `<i class="fas fa-info-circle"></i> ${message}`;
+            container.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 50);
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => toast.remove(), 300);
+            }, 3000);
+        }
+
+        // Scroll Progress
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById("scroll-progress").style.width = scrolled + "%";
+        });
+
+        // Filtering Logic
+        let currentCategory = 'all';
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                if (!btn.dataset.filter) return;
+                currentCategory = btn.dataset.filter;
+                document.querySelector('.filter-btn.active').classList.remove('active');
+                btn.classList.add('active');
+                document.getElementById('current-filter-crumb').innerText = btn.innerText;
+                filterBooks();
+            });
+        });
+
+        // Real-Time Search Logic
+        const searchInput = document.getElementById('archive-search');
+        searchInput.addEventListener('input', filterBooks);
+
+        function filterBooks() {
+            const query = searchInput.value.toLowerCase().trim();
+            let visibleCount = 0;
+
+            document.querySelectorAll('.book').forEach(b => {
+                const title = b.dataset.title;
+                const data = archiveData[title];
+                const matchesCategory = currentCategory === 'all' || data.cat === currentCategory;
+                const matchesSearch = title.toLowerCase().includes(query) || 
+                                     data.author.toLowerCase().includes(query) || 
+                                     data.cid.toLowerCase().includes(query);
+
+                const isMatch = matchesCategory && matchesSearch;
+                
+                if (isMatch) visibleCount++;
+                gsap.to(b, { opacity: isMatch ? 1 : 0, scale: isMatch ? 1 : 0.8, duration: 0.3, display: isMatch ? 'block' : 'none' });
+            });
+
+            document.getElementById('no-results').style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+
+        // Access Request Form Handling
+        document.getElementById('visit-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const refNum = 'REQ-' + Math.floor(Math.random() * 90000 + 10000);
+            this.innerHTML = `<div style="text-align: center; padding: 40px; border: 2px solid var(--accent); background: rgba(212, 175, 55, 0.05);"><i class="fas fa-paper-plane" style="font-size: 2rem; color: var(--accent); margin-bottom: 20px;"></i><h3 style="font-family: 'Playfair Display'; color: var(--deep-red);">Request Logged</h3><p style="font-size: 0.8rem; margin: 15px 0;">Your application has been added to the queue.</p><div style="background: var(--deep-red); color: white; padding: 10px; font-family: monospace; letter-spacing: 2px;">REF: ${refNum}</div><p style="font-size: 0.6rem; opacity: 0.6; margin-top: 20px;">Please check your email for confirmation within 48 hours.</p></div>`;
+            triggerToast("Access Request Logged Successfully!");
+        });
+
+        // BibTeX Export
+        document.getElementById('download-cite').addEventListener('click', () => {
+            const title = document.getElementById('m-title').innerText;
+            const bibtex = `@book{${document.getElementById('m-cid').innerText},\n  author = {${document.getElementById('m-author').innerText}},\n  title = {${title}},\n  year = {${document.getElementById('m-year').innerText}},\n  publisher = {Marx Memorial Library Archive}\n}`;
+            const blob = new Blob([bibtex], { type: 'text/plain' });
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a'); a.href = url; a.download = `${title.replace(/\s+/g, '_')}_citation.bib`; a.click();
+            triggerToast("BibTeX Citation exported!");
+        });
+
+        // Add to Visit Form Field
+        let activeCid = '';
+        document.getElementById('add-to-request-btn').addEventListener('click', () => {
+            const field = document.getElementById('doc-request-field');
+            if(!field.value.includes(activeCid)) {
+                field.value = field.value ? `${field.value}, ${activeCid}` : activeCid;
+                triggerToast(`${activeCid} added to access request form.`);
+            } else {
+                triggerToast(`Document ${activeCid} is already in request list.`);
+            }
+            closeAllModals();
+            window.location.hash = '#book-visit';
+        });
+
+        // Dark/Night Mode
+        const toggleReadingMode = () => {
+            document.body.classList.toggle('dark-mode');
+            const isDark = document.body.classList.contains('dark-mode');
+            document.getElementById('reading-mode-btn').querySelector('i').className = isDark ? 'fas fa-sun' : 'fas fa-moon';
+            triggerToast(isDark ? "Switched to Night Mode" : "Switched to Light Mode");
+        };
+        document.getElementById('reading-mode-btn').onclick = toggleReadingMode;
+
+        // Modals Logic
+        const modal = document.getElementById('book-modal');
+        const helpModal = document.getElementById('help-modal');
+        const ov = document.getElementById('overlay');
+
+        document.querySelectorAll('.book').forEach(b => {
+            b.addEventListener('click', () => {
+                const title = b.dataset.title;
+                const d = archiveData[title];
+                activeCid = d.cid;
+                document.getElementById('m-title').innerText = title;
+                document.getElementById('m-author').innerText = d.author;
+                document.getElementById('m-cid').innerText = d.cid;
+                document.getElementById('m-year').innerText = d.year;
+                document.getElementById('m-desc').innerText = d.desc;
+                document.getElementById('m-img').src = d.img;
+                openModal(modal);
+            });
+        });
+
+        function openModal(targetModal) {
+            targetModal.style.display = 'block'; ov.style.display = 'block';
+            gsap.to([targetModal, ov], {opacity: 1, scale: 1, duration: 0.3, pointerEvents: 'all'});
+        }
+
+        function closeAllModals() {
+            gsap.to([modal, helpModal, ov], {
+                opacity: 0, scale: 0.9, duration: 0.2, onComplete: () => { 
+                    modal.style.display = 'none'; 
+                    helpModal.style.display = 'none';
+                    ov.style.display = 'none'; 
+                    modal.style.pointerEvents = 'none';
+                    helpModal.style.pointerEvents = 'none';
+                    ov.style.pointerEvents = 'none';
+                }
+            });
+        }
+
+        document.querySelectorAll('.closeModal').forEach(btn => btn.onclick = closeAllModals);
+        ov.onclick = closeAllModals;
+
+        // Keyboard Navigation Shortcuts
+        window.addEventListener('keydown', (e) => {
+            if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName)) {
+                if(e.key === 'Escape') document.activeElement.blur();
+                return;
+            }
+
+            if (e.key === 's' || e.key === 'S') {
+                e.preventDefault();
+                searchInput.focus();
+            } else if (e.key === 'l' || e.key === 'L') {
+                toggleReadingMode();
+            } else if (e.key === '?') {
+                openModal(helpModal);
+            } else if (e.key === 'Escape') {
+                closeAllModals();
+            }
+        });
+
+        // Intersection Observer for Animated Numbers
+        const statObs = new IntersectionObserver((entries) => {
+            entries.forEach(en => { if(en.isIntersecting) { 
+                const target = +en.target.dataset.target;
+                let c = 0; const up = () => { c += target/80; if(c<target) { en.target.innerText = Math.ceil(c); requestAnimationFrame(up); } else en.target.innerText = target; };
+                up(); statObs.unobserve(en.target);
+            }});
+        }, {threshold: 0.5});
+        document.querySelectorAll('.stat-counter').forEach(s => statObs.observe(s));
+    </script>
+</body>
+</html>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Special Collections & Catalogue — Marx Memorial Library</title>
+  <style>
+    /* CSS Variables & Design Tokens */
+    :root {
+      --bg-primary: #ffffffff;
+      --bg-secondary: #ffffff;
+      --bg-card: #ffffff;
+      --text-main: #1c1917;
+      --text-muted: #57534e;
+      --brand-red: #a81c1c;
+      --brand-red-dark: #7f1313;
+      --border-color: #ffffff;
+      --accent-gold: #c2410c;
+      --font-heading: 'Georgia', serif;
+      --font-body: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    }
+
+    /* Reset & Base Styles */
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+      font-family: var(--font-body);
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Header & Navigation */
+    header {
+      background-color: var(--bg-card);
+      border-bottom: 2px solid var(--brand-red);
+      padding: 1.25rem 0;
+    }
+
+    .nav-wrapper {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .logo {
+      font-family: var(--font-heading);
+      font-size: 1.4rem;
+      font-weight: 700;
+      color: var(--brand-red);
+      text-decoration: none;
+      letter-spacing: -0.02em;
+    }
+
+    nav ul {
+      display: flex;
+      list-style: none;
+      gap: 1.75rem;
+    }
+
+    nav a {
+      color: var(--text-main);
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.95rem;
+    }
+
+    nav a:hover, nav a.active {
+      color: var(--brand-red);
+    }
+
+    /* Hero Section */
+    .hero {
+      background-color: var(--bg-secondary);
+      border-bottom: 1px solid var(--border-color);
+      padding: 4rem 0 3rem;
+      text-align: center;
+    }
+
+    .hero h1 {
+      font-family: var(--font-heading);
+      font-size: 2.75rem;
+      font-weight: 700;
+      color: var(--text-main);
+      margin-bottom: 1rem;
+    }
+
+    .hero p {
+      font-size: 1.15rem;
+      color: var(--text-muted);
+      max-width: 720px;
+      margin: 0 auto 2rem;
+    }
+
+    /* Search & Filter Interface */
+    .search-section {
+      margin-top: -2rem;
+      margin-bottom: 4rem;
+    }
+
+    .search-card {
+      background: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      padding: 2rem;
+      box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05);
+    }
+
+    .search-input-group {
+      display: flex;
+      gap: 0.75rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .search-input-group input {
+      flex: 1;
+      padding: 0.9rem 1.25rem;
+      font-size: 1rem;
+      border: 1px solid var(--border-color);
+      border-radius: 6px;
+      outline: none;
+      background-color: #fff;
+    }
+
+    .search-input-group input:focus {
+      border-color: var(--brand-red);
+      box-shadow: 0 0 0 3px rgba(168, 28, 28, 0.1);
+    }
+
+    .btn-search {
+      background-color: var(--brand-red);
+      color: #ffffff;
+      padding: 0.9rem 1.75rem;
+      font-size: 1rem;
+      font-weight: 600;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    .btn-search:hover {
+      background-color: var(--brand-red-dark);
+    }
+
+    .filters-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.25rem;
+      align-items: center;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border-color);
+    }
+
+    .filter-group {
+      display: flex;
+      flex-direction: column;
+      gap: 0.4rem;
+    }
+
+    .filter-group label {
+      font-size: 0.825rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      color: var(--text-muted);
+    }
+
+    .filter-group select {
+      padding: 0.6rem;
+      font-size: 0.95rem;
+      border: 1px solid var(--border-color);
+      border-radius: 4px;
+      background-color: var(--bg-primary);
+      color: var(--text-main);
+    }
+
+    .checkbox-group {
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding-top: 1.25rem;
+    }
+
+    .checkbox-group input {
+      accent-color: var(--brand-red);
+      width: 1.1rem;
+      height: 1.1rem;
+    }
+
+    /* Collections Section */
+    .section-title {
+      font-family: var(--font-heading);
+      font-size: 1.85rem;
+      margin-bottom: 0.5rem;
+    }
+
+    .section-subtitle {
+      color: var(--text-muted);
+      margin-bottom: 2rem;
+    }
+
+    .collections-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(340px, 1fr));
+      gap: 2rem;
+      margin-bottom: 4rem;
+    }
+
+    .collection-card {
+      background-color: var(--bg-card);
+      border: 1px solid var(--border-color);
+      border-radius: 8px;
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .collection-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 20px -5px rgba(0, 0, 0, 0.08);
+    }
+
+    .card-content {
+      padding: 1.75rem;
+      display: flex;
+      flex-direction: column;
+      flex: 1;
+    }
+
+    .card-tag {
+      font-size: 0.75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--accent-gold);
+      margin-bottom: 0.5rem;
+    }
+
+    .collection-card h3 {
+      font-family: var(--font-heading);
+      font-size: 1.35rem;
+      margin-bottom: 0.75rem;
+      color: var(--text-main);
+    }
+
+    .collection-card p {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+      flex: 1;
+    }
+
+    .card-meta {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      margin-bottom: 1.25rem;
+      padding-top: 0.75rem;
+      border-top: 1px dashed var(--border-color);
+    }
+
+    .card-action {
+      color: var(--brand-red);
+      font-weight: 600;
+      text-decoration: none;
+      font-size: 0.95rem;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+    }
+
+    .card-action:hover {
+      color: var(--brand-red-dark);
+      text-decoration: underline;
+    }
+
+    /* Footer */
+    footer {
+      background-color: var(--bg-secondary);
+      border-top: 1px solid var(--border-color);
+      padding: 3rem 0;
+      margin-top: 4rem;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Header -->
+  <header>
+    <div class="container nav-wrapper">
+      <a href="#" class="logo">Marx Memorial Library & Workers' School</a>
+      <nav>
+        <ul>
+          <li><a href="#">Home</a></li>
+          <li><a href="#" class="active">Special Collections</a></li>
+          <li><a href="#">Events</a></li>
+          <li><a href="#">Visit</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+
+  <!-- Hero Section -->
+  <section class="hero">
+    <div class="container">
+      <h1>Catalogue & Special Collections</h1>
+      <p>Explore over 50,000 books, pamphlets, banners, and primary archives documenting working-class history, radical politics, and international solidarity.</p>
+    </div>
+  </section>
+
+  <!-- Search & Filter Interface -->
+  <main class="container">
+    <section class="search-section">
+      <div class="search-card">
+        <form onsubmit="event.preventDefault();">
+          <div class="search-input-group">
+            <input type="text" placeholder="Search by keyword, author, title, or archive reference code..." aria-label="Search Catalogue">
+            <button type="submit" class="btn-search">Search Archives</button>
+          </div>
+
+          <div class="filters-grid">
+            <div class="filter-group">
+              <label for="filter-format">Format / Medium</label>
+              <select id="filter-format">
+                <option value="all">All Material Types</option>
+                <option value="books">Books & Rare Manuscripts</option>
+                <option value="pamphlets">Radical Pamphlets</option>
+                <option value="periodicals">Newspapers & Periodicals</option>
+                <option value="banners">Trade Union Banners & Posters</option>
+                <option value="audio">Oral Histories & Audio</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="filter-era">Historical Period</label>
+              <select id="filter-era">
+                <option value="all">All Eras</option>
+                <option value="19c">19th Century & Earlier</option>
+                <option value="ww1">1900–1918 (WWI & Russian Rev.)</option>
+                <option value="interwar">1919–1939 (Spanish Civil War)</option>
+                <option value="postwar">1940–1980 (Cold War & Decolonisation)</option>
+                <option value="modern">1981–Present</option>
+              </select>
+            </div>
+
+            <div class="filter-group">
+              <label for="filter-subject">Subject Focus</label>
+              <select id="filter-subject">
+                <option value="all">All Subjects</option>
+                <option value="labour">Labour Movement & Trade Unionism</option>
+                <option value="antifascism">Anti-Fascism & Resistance</option>
+                <option value="marxism">Marxist Theory & Philosophy</option>
+                <option value="peace">Peace & Anti-Nuclear Movements</option>
+              </select>
+            </div>
+
+            <div class="checkbox-group">
+              <input type="checkbox" id="digitized-only">
+              <label for="digitized-only" style="text-transform: none; font-weight: normal;">Digitized Online Only</label>
+            </div>
+          </div>
+        </form>
+      </div>
+    </section>
+
+    <!-- Highlighted Special Collections -->
+    <section>
+      <h2 class="section-title">Featured Special Collections</h2>
+      <p class="section-subtitle">Browse dedicated archives curated by our archival team.</p>
+
+      <div class="collections-grid">
+        <!-- Collection 1 -->
+        <article class="collection-card">
+          <div class="card-content">
+            <span class="card-tag">Primary Archive</span>
+            <h3>International Brigades Archive</h3>
+            <p>The definitive UK collection of personal papers, banner designs, photographs, and field reports from volunteers who fought against fascism during the Spanish Civil War (1936–1939).</p>
+            <div class="card-meta">2,400+ items catalogued • Digitized material available</div>
+            <a href="#" class="card-action">Explore Collection &rarr;</a>
+          </div>
+        </article>
+
+        <!-- Collection 2 -->
+        <article class="collection-card">
+          <div class="card-content">
+            <span class="card-tag">Special Collection</span>
+            <h3>Printer’s Library & Radical Press</h3>
+            <p>Rare early socialist print runs, artisan press equipment records, and illegal pamphlets published by 19th and early 20th-century working-class publishing collectives.</p>
+            <div class="card-meta">1,100+ items catalogued • Physical access only</div>
+            <a href="#" class="card-action">Explore Collection &rarr;</a>
+          </div>
+        </article>
+
+        <!-- Collection 3 -->
+        <article class="collection-card">
+          <div class="card-content">
+            <span class="card-tag">Special Collection</span>
+            <h3>JD Bernal Science & Society Collection</h3>
+            <p>Correspondence, notebooks, and draft papers of physicist JD Bernal, detailing the intersection of scientific research, peace activism, and Marxist philosophy.</p>
+            <div class="card-meta">850 items catalogued • Partially digitized</div>
+            <a href="#" class="card-action">Explore Collection &rarr;</a>
+          </div>
+        </article>
+
+        <!-- Collection 4 -->
+        <article class="collection-card">
+          <div class="card-content">
+            <span class="card-tag">Rare Pamphlets</span>
+            <h3>19th Century Chartist Pamphlets</h3>
+            <p>Original broadsides, petition copies, and newsletters produced during the Chartist movement demanding democratic voting rights for working people.</p>
+            <div class="card-meta">320 items catalogued • Fully digitized</div>
+            <a href="#" class="card-action">Explore Collection &rarr;</a>
+          </div>
+        </article>
+
+        <!-- Collection 5 -->
+        <article class="collection-card">
+          <div class="card-content">
+            <span class="card-tag">Visual & Banners</span>
+            <h3>Trade Union Banners & Ephemera</h3>
+            <p>A unique repository of hand-painted silk banners, sash pins, and strike placards from major UK industrial disputes throughout the 20th century.</p>
+            <div class="card-meta">150+ physical banners • High-res gallery available</div>
+            <a href="#" class="card-action">Explore Collection &rarr;</a>
+          </div>
+        </article>
+
+        <!-- Collection 6 -->
+        <article class="collection-card">
+          <div class="card-content">
+            <span class="card-tag">Historic Library</span>
+            <h3>Lenin In Exile Collection</h3>
+            <p>Rare periodicals produced in London by Vladimir Lenin between 1902 and 1903 during the publication of the ISKRA newspaper inside 37 Clerkenwell Green.</p>
+            <div class="card-meta">45 rare volumes • Reading room access</div>
+            <a href="#" class="card-action">Explore Collection &rarr;</a>
+          </div>
+        </article>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <div class="container">
+      <p>&copy; Marx Memorial Library & Workers' School | 37a Clerkenwell Green, London EC1R 0DU</p>
+    </div>
+  </footer>
+
+</body>
+</html>
